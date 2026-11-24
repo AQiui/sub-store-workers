@@ -1,9 +1,6 @@
 name: Sync Upstream Sub-Store
 
 on:
-  push:
-    paths:
-      - .github/workflows/sync-upstream.yml
   schedule:
     # 每天 UTC 16:00 = 北京 00:00
     - cron: '0 16 * * *'
@@ -23,7 +20,6 @@ env:
 
 jobs:
   sync:
-    if: github.event_name != 'push' || contains(github.event.head_commit.message, '[trigger-sync]')
     runs-on: ubuntu-latest
     permissions:
       contents: write
