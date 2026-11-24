@@ -1,6 +1,9 @@
 name: Sync Upstream Sub-Store
 
 on:
+  push:
+    paths:
+      - .github/workflows/sync-upstream.yml
   schedule:
     # 每天 UTC 16:00 = 北京 00:00
     - cron: '0 16 * * *'
@@ -20,6 +23,7 @@ env:
 
 jobs:
   sync:
+    if: github.event_name != 'push' || contains(github.event.head_commit.message, '[trigger-sync]')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -63,7 +67,10 @@ jobs:
       - name: Check if update needed
         id: check
         run: |
-          if [ "${{ steps.upstream.outputs.sha }}" = "${{ steps.last.outputs.sha }}" ] && [ "${{ inputs.force }}" != "true" ]; then
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "needed=true" >> $GITHUB_OUTPUT
+            echo "Update needed (forced by trigger-sync)"
+          elif [ "${{ steps.upstream.outputs.sha }}" = "${{ steps.last.outputs.sha }}" ] && [ "${{ inputs.force }}" != "true" ]; then
             echo "needed=false" >> $GITHUB_OUTPUT
             echo "No update needed"
           else
